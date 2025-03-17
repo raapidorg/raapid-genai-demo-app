@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAAPID AI-Assisted Medical Coding</title>
+    <link rel="stylesheet" href="markdownstyle.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        function fetchPatientData() {
+            // Fetch patient data from the server
+            const patientId = getQueryParam('patient_id');
+            if (patientId) {
+                getPatientData(patientId);
+            } else {
+                console.error('Patient ID not found in URL query parameters.');
+            }
+        }
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+      }
+      function getPatientData(patientId) {
+        fetch(`http://localhost:8081/patient/${patientId}/encounter`)
+        .then(response => response.json())
+        .then(data => renderPatientData(data))
+        .catch(error => console.error('Error:', error));
+        // data = {
+        //     "id":patientId,
+        //     "name": "John Doe",
+        //     "documentPath": "https://intcodingplatformsa.blob.core.windows.net/audit-apigateway/vision-ai-process-docs/demo-docs/OCR_document__20250311_2_modified.txt?sp=r&st=2025-03-11T14:47:39Z&se=2025-03-13T22:47:39Z&spr=https&sv=2022-11-02&sr=b&sig=JScgaD%2F58XgaWvK%2FCQdztBdAO46w%2FCGDvCMaDZAgiVU%3D",
+        //     "documentType": "Medical Record"
+        // }
+        // renderPatientData(data);
+        
+      }
+      function renderPatientData(data) {
+        // Render patient data on the page
+        console.log(data);
+        //let medicalDocument = '';
+
+        codes = [];
+        
+        codes = data.codes.map(code => {
+                codeDto = {
+                id:code.code,
+                name:code.description,
+                status:code.status,
+                hcc:code.hccCodes,
+                evidence:code.evidenceList === null ? [] : code.evidenceList.map(element => {
+                    evidecneDto = {
+                        text:element.text,
+                        location:"",
+                        pages:element.pages
+                    }
+                    return evidecneDto;
+                }),
+                aiAction:'review',
+                rationale:code.justification,
+                assessment:code.assessment       
+                }
+                return codeDto;
+            });
+        expandedCode = codes != null && codes.length > 0 ?  codes[0].id : '';    
+        renderCodes();
+        switchTab('review');
+            
+        // Highlight all evidence on initial load
+        initialHighlighting = true;
+
+        fetch(data.documentUrl)
+        .then(response => response.text())
+        .then(text => {
+            let count = 0;
+            text = text.replaceAll("<xml-output>", () => {
+                count++;
+             return `<docPage id="document_page${count}" class="page">\n`;
+            });
+            count = 0;
+            text = text.replaceAll("</xml-output>", () => {
+                count++;
+                return `\nPage No : ${count}\n-\n</docPage>`;
+            });
+            medicalDocument = marked.parse(text);
+            renderDocument();
+        })
+        
+        
+
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+            fetchPatientData();
+        });
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .highlighted-blue {
+            background-color: rgba(191, 219, 254, 0.8);
+            border-radius: 2px;
+            padding: 0 1px;
+        }
+        .highlighted-yellow {
+            background-color: rgba(254, 240, 138, 0.8);
+            border-radius: 2px;
+            padding: 0 1px;
+        }
+        .pre-wrap {
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .sidebar-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            cursor: pointer;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            border-bottom: 2px solid #3b82f6;
+            color: #2563eb;
+        }
+        .tab-button:not(.active) {
+            color: #6b7280;
+        }
+        .tab-button:not(.active):hover {
+            color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex flex-col h-screen">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
+        <div class="flex items-center">
+            <h1 class="text-xl font-bold mr-4">RAAPID</h1>
+            <span class="text-sm">AI-Assisted Medical Coding</span>
+        </div>
+        <div class="flex items-center">
+            <span class="bg-white text-blue-600 font-bold rounded-md px-2 py-1 mr-4">MC</span>
+            <span>Medical Coder</span>
+        </div>
+    </header>
+
+    <!-- Patient Info Bar -->
+    <div class="bg-white p-4 shadow flex justify-between items-center">
+        <div class="grid grid-cols-4 gap-8">
+            <div>
+                <span class="text-gray-500 text-sm">Patient</span>
+                <h2 class="font-medium">Johnson, Robert</h2>
+            </div>
+            <div>
+                <span class="text-gray-500 text-sm">MRN</span>
+                <p>56789EFGH</p>
+            </div>
+            <div>
+                <span class="text-gray-500 text-sm">Age</span>
+                <p>66</p>
+            </div>
+            <div>
+                <span class="text-gray-500 text-sm">Document</span>
+                <p>Office Visit Note</p>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <div class="mr-8">
+                <span class="text-gray-500 text-sm">Date</span>
+                <p>March 2, 2025</p>
+            </div>
+            <div class="flex">
+                <button class="flex items-center text-blue-600 mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    <span>Previous</span>
+                </button>
+                <button class="flex items-center text-blue-600">
+                    <span>Next</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Status -->
+    <div class="bg-yellow-50 p-3 border-y border-yellow-100 flex justify-between items-center">
+        <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>5 out of 10 codes need your review (<span id="review-status">1 of 5 reviewed</span>)</span>
+        </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded" hidden>
+            Submit All Reviews
+        </button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <div class="bg-white w-16 border-r flex flex-col items-center py-4">
+            <div class="sidebar-icon bg-blue-100 text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </div>
+            <div class="sidebar-icon text-gray-600 hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div class="sidebar-icon text-gray-600 hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+            </div>
+            <div class="sidebar-icon text-gray-600 hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <div class="flex-grow"></div>
+            <div class="sidebar-icon text-gray-600 hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </div>
+        </div>
+
+        <!-- Document Panel -->
+        <div class="w-1/2 overflow-y-auto border-r" id="document-panel">
+            <div class="p-4">
+                <h2 class="font-bold text-lg mb-4">Document</h2>
+                <div id="document-content" class="pre-wrap text-sm text-gray-800 markdown-container">
+                    <!-- Medical document content will be inserted here via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Coding Panel -->
+        <div class="w-1/2 bg-white overflow-y-auto">
+            <!-- Tabs for Code Groups -->
+            <div class="sticky top-0 bg-white border-b z-10">
+                <div class="p-4 flex justify-between items-center">
+                    <h2 class="font-bold text-lg">Diagnosis Codes</h2>
+                    <!-- <button class="bg-blue-600 text-white px-4 py-2 rounded flex items-center">
+                        <span class="mr-1">+</span> Add Code
+                    </button> -->
+                </div>
+                
+                <div class="flex border-b">
+                    <button class="tab-button active" data-tab="review">
+                        Required Review (<span id="review-count">4</span>)
+                    </button>
+                    <button class="tab-button" data-tab="accepted">
+                        Accepted Codes (<span id="accepted-count">1</span>)
+                    </button>
+                    <button class="tab-button" data-tab="rejected">
+                        Rejected Codes (<span id="rejected-count">0</span>)
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tab content containers -->
+            <div id="review-tab" class="tab-content p-1">
+                <!-- Review codes will be inserted here via JavaScript -->
+            </div>
+            
+            <div id="accepted-tab" class="tab-content p-1 hidden">
+                <!-- Accepted codes will be inserted here via JavaScript -->
+            </div>
+            
+            <div id="rejected-tab" class="tab-content p-1 hidden">
+                <!-- Rejected codes will be inserted here via JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-white border-t p-3 flex justify-between items-center">
+        <div class="text-sm text-gray-500">
+            RAAPID AI-Assisted Medical Coding | Last updated: March 4, 2025
+        </div>
+        <div class="flex items-center text-orange-500">
+            <p><span id="codes-needing-review">4</span> codes need human review</p>
+        </div>
+    </footer>
+
+    <script>
+        // Medical document content
+        let medicalDocument = `PATIENT: Johnson, Robert
+MRN: 56789EFGH
+DOB: 05/15/1958 (66 years)
+DATE OF SERVICE: 03/02/2025
+
+CHIEF COMPLAINT: Shortness of breath, fatigue, and bilateral leg swelling
+
+HISTORY OF PRESENT ILLNESS:
+Mr. Johnson is a 66-year-old male presenting with worsening shortness of breath over the past week, particularly with exertion and when lying flat. He reports increased fatigue and bilateral lower extremity edema despite compliance with his medications. Patient denies chest pain but notes occasional palpitations. He has been sleeping on two pillows due to orthopnea and reports waking up at night feeling short of breath 2-3 times this week. Patient has maintained a low sodium diet but admits to missing his diuretic dose on two occasions last week.
+
+PAST MEDICAL HISTORY:
+1. Hypertension, diagnosed 5 years ago, currently well-controlled on medication
+2. Congestive heart failure, diagnosed 2 years ago, NYHA Class II
+3. Type 2 diabetes mellitus, diagnosed 8 years ago
+4. Hyperlipidemia
+5. Asthma, moderate persistent, diagnosed in childhood
+6. Osteoarthritis of both knees
+7. Chronic kidney disease, stage II (GFR 65)
+
+MEDICATIONS:
+1. Lisinopril 10mg daily
+2. Furosemide 20mg daily
+3. Metoprolol succinate 25mg daily
+4. Metformin 1000mg twice daily
+5. Atorvastatin 20mg daily
+6. Fluticasone/salmeterol 250/50 mcg, 1 puff twice daily
+7. Albuterol inhaler, 2 puffs every 4-6 hours as needed
+8. Aspirin 81mg daily
+
+ALLERGIES: Penicillin (rash), Sulfa drugs (anaphylaxis)
+
+SOCIAL HISTORY:
+- Tobacco: Former smoker, quit 10 years ago. 30 pack-year history.
+- Alcohol: Occasional, 1-2 drinks per week
+- Occupation: Retired teacher
+- Lives with wife in single-story home
+
+FAMILY HISTORY:
+- Father: Deceased at 72, myocardial infarction
+- Mother: Deceased at 80, stroke
+- Brother: Alive, 70, hypertension and type 2 diabetes
+- Sister: Alive, 62, breast cancer survivor
+
+VITAL SIGNS:
+Temperature: 98.6°F
+Blood Pressure: 138/88 mmHg
+Heart Rate: 88 bpm
+Respiratory Rate: 20/min
+SpO2: 94% on room air
+
+PHYSICAL EXAMINATION:
+GENERAL: Alert, oriented, in no acute distress. Appears fatigued.
+HEENT: Normocephalic, atraumatic. No jugular venous distention.
+NECK: Supple. No lymphadenopathy.
+CARDIOVASCULAR: Regular rate and rhythm. S1, S2 normal. Trace bilateral lower extremity edema.
+RESPIRATORY: Clear to auscultation bilaterally. No wheezes, rales, or rhonchi.
+ABDOMEN: Soft, non-tender, non-distended. No hepatomegaly.
+EXTREMITIES: Bilateral lower extremity edema to mid-shin, 2+ pitting.
+SKIN: Warm, dry, no rash.
+NEUROLOGICAL: Grossly intact.
+
+DIAGNOSTIC STUDIES:
+Chest X-ray: Mild cardiomegaly, no pulmonary edema or infiltrates.
+ECG: Normal sinus rhythm, no acute ST-T wave changes.
+BNP: 450 pg/mL (elevated)
+CBC: Within normal limits
+Basic Metabolic Panel: Sodium 138 mEq/L, Potassium 4.0 mEq/L, BUN 22 mg/dL, Creatinine 1.2 mg/dL
+Blood glucose: 142 mg/dL (fasting)
+HbA1c: 7.2% (measured 2 weeks ago)
+Lipid panel: Total cholesterol 185 mg/dL, LDL 110 mg/dL, HDL 45 mg/dL, Triglycerides 150 mg/dL
+
+ASSESSMENT AND PLAN:
+1. Congestive heart failure exacerbation - Mildly decompensated CHF likely due to missed diuretic doses. Increase furosemide to 40mg daily. Emphasized medication compliance. Schedule echocardiogram. Follow-up with cardiology in 1 week.
+
+2. Hypertension - Continue current medication regimen. Blood pressure slightly elevated today, likely due to acute illness.
+
+3. Type 2 diabetes - Well-controlled. Continue current regimen. Advised on diet and exercise.
+
+4. Hyperlipidemia - Continue current statin therapy. Lipids at goal.
+
+5. Asthma - Stable. Continue current controller medication. Patient reports using rescue inhaler 1-2 times weekly.
+
+6. Chronic kidney disease - Stable. Will monitor renal function with increased diuretic dose.
+
+DISPOSITION: Discharge home with increased diuretic. Contact physician if symptoms worsen or weight increases by more than 2 pounds in 24 hours.
+
+FOLLOW-UP:
+1. Cardiology in 1 week
+2. Primary care in 2 weeks
+3. Echocardiogram scheduled for 03/05/2025
+
+DISCHARGE MEDICATIONS:
+1. Increase furosemide to 40mg daily
+2. Continue all other home medications as prescribed
+
+INSTRUCTIONS: Daily weight monitoring. Strict fluid restriction to 1.5 liters per day. Low sodium diet. Elevate legs while sitting. Avoid prolonged standing.
+
+Dr. Emily Chen, MD
+Internal Medicine`;
+
+        // Initial medical codes data
+        const initialCodes = [
+            {
+                id: 'I10',
+                name: 'Essential (primary) hypertension',
+                status: 'review',
+                hcc: 'HCC 85',
+                evidence: [
+                    {
+                        text:"BASOPHILS",
+                        location: 'PAST MEDICAL HISTORY'
+                    },
+                    {
+                        text:"CBC",
+                        location: 'PAST MEDICAL HISTORY'
+                    },
+                    {
+                        text:"Vitamin D,25-OH,TOTAL IA Final result",
+                        location: 'PAST MEDICAL HISTORY'
+                    },                    
+                    {
+                        text: 'Hypertension, diagnosed 5 years ago, currently well-controlled on medication',
+                        location: 'PAST MEDICAL HISTORY'
+                    },
+                    {
+                        text: 'Lisinopril 10mg daily',
+                        location: 'MEDICATIONS'
+                    },
+                    {
+                        text: 'Blood Pressure: 138/88 mmHg',
+                        location: 'VITAL SIGNS'
+                    },
+                    {
+                        text: 'Hypertension - Continue current medication regimen. Blood pressure slightly elevated today, likely due to acute illness.',
+                        location: 'ASSESSMENT AND PLAN'
+                    }
+                ],
+                aiAction: 'review',
+                rationale: 'The patient has documented hypertension with current treatment. The blood pressure is mildly elevated today but attributed to the acute illness.'
+            },
+            {
+                id: 'I50.9',
+                name: 'Heart failure, unspecified',
+                status: 'review',
+                hcc: 'HCC 85',
+                evidence: [
+                    {
+                        text: 'Congestive heart failure, diagnosed 2 years ago, NYHA Class II',
+                        location: 'PAST MEDICAL HISTORY'
+                    },
+                    {
+                        text: 'Furosemide 20mg daily',
+                        location: 'MEDICATIONS'
+                    },
+                    {
+                        text: 'Metoprolol succinate 25mg daily',
+                        location: 'MEDICATIONS'
+                    },
+                    {
+                        text: 'CARDIOVASCULAR: Regular rate and rhythm. S1, S2 normal. Trace bilateral lower extremity edema.',
+                        location: 'PHYSICAL EXAMINATION'
+                    },
+                    {
+                        text: 'Congestive heart failure exacerbation - Mildly decompensated CHF likely due to missed diuretic doses.',
+                        location: 'ASSESSMENT AND PLAN'
+                    }
+                ],
+                aiAction: 'review',
+                rationale: 'The patient has documented heart failure with current treatment. Considered stable per assessment, with appropriate medication regimen.'
+            },
+            {
+                id: 'E11.9',
+                name: 'Type 2 diabetes mellitus without complications',
+                status: 'accepted',
+                hcc: 'HCC 19',
+                evidence: [
+                    {
+                        text: 'Type 2 diabetes mellitus, diagnosed 8 years ago',
+                        location: 'PAST MEDICAL HISTORY'
+                    },
+                    {
+                        text: 'Metformin 1000mg twice daily',
+                        location: 'MEDICATIONS'
+                    },
+                    {
+                        text: 'Blood glucose: 142 mg/dL (fasting)',
+                        location: 'DIAGNOSTIC STUDIES'
+                    },
+                    {
+                        text: 'HbA1c: 7.2% (measured 2 weeks ago)',
+                        location: 'DIAGNOSTIC STUDIES'
+                    },
+                    {
+                        text: 'Type 2 diabetes - Well-controlled. Continue current regimen. Advised on diet and exercise.',
+                        location: 'ASSESSMENT AND PLAN'
+                    }
+                ],
+                aiAction: 'accept',
+                rationale: 'The patient has documented type 2 diabetes with current treatment. Recent HbA1c of 7.2% indicates adequate control.'
+            },
+            {
+                id: 'J45.40',
+                name: 'Moderate persistent asthma',
+                status: 'review',
+                hcc: 'HCC 110',
+                evidence: [
+                    {
+                        text: 'Asthma, moderate persistent, diagnosed in childhood',
+                        location: 'PAST MEDICAL HISTORY'
+                    },
+                    {
+                        text: 'Fluticasone/salmeterol 250/50 mcg, 1 puff twice daily',
+                        location: 'MEDICATIONS'
+                    },
+                    {
+                        text: 'Albuterol inhaler, 2 puffs every 4-6 hours as needed',
+                        location: 'MEDICATIONS'
+                    },
+                    {
+                        text: 'RESPIRATORY: Clear to auscultation bilaterally. No wheezes, rales, or rhonchi.',
+                        location: 'PHYSICAL EXAMINATION'
+                    },
+                    {
+                        text: 'Asthma - Stable. Continue current controller medication. Patient reports using rescue inhaler 1-2 times weekly.',
+                        location: 'ASSESSMENT AND PLAN'
+                    }
+                ],
+                aiAction: 'review',
+                rationale: 'The patient has documented moderate persistent asthma with appropriate controller and rescue medications. Classification is supported by medication regimen and frequency of rescue inhaler use.'
+            },
+            {
+                id: 'E78.5',
+                name: 'Hyperlipidemia, unspecified',
+                status: 'review',
+                hcc: 'HCC 57',
+                evidence: [
+                    {
+                        text: 'Hyperlipidemia',
+                        location: 'PAST MEDICAL HISTORY'
+                    },
+                    {
+                        text: 'Atorvastatin 20mg daily',
+                        location: 'MEDICATIONS'
+                    },
+                    {
+                        text: 'Lipid panel: Total cholesterol 185 mg/dL, LDL 110 mg/dL, HDL 45 mg/dL, Triglycerides 150 mg/dL',
+                        location: 'DIAGNOSTIC STUDIES'
+                    },
+                    {
+                        text: 'Hyperlipidemia - Continue current statin therapy. Lipids at goal.',
+                        location: 'ASSESSMENT AND PLAN'
+                    }
+                ],
+                aiAction: 'review',
+                rationale: 'The patient has documented hyperlipidemia with current statin therapy. Recent lipid panel shows values within target range.'
+            }
+        ];
+
+        // Current state
+        let highlightedEvidence = null;
+        let initialHighlighting = true;
+        let activeTab = 'review';
+        let expandedCode = 'I10';
+        let codes = [...initialCodes];
+
+        // Render the document with highlighted evidence
+        function renderDocument() {
+            const docContent = document.getElementById('document-content');
+            
+            if (initialHighlighting) {
+                let result = medicalDocument;
+                
+                // Get all unique evidence texts
+                const allEvidenceTexts = [...new Set(codes.flatMap(code => 
+                    code.evidence === null ? [] : code.evidence.map(item => item.text)
+                ))];
+                
+                // Sort by length in descending order to avoid partial replacements
+                allEvidenceTexts.sort((a, b) => b.length - a.length);
+                
+                // Replace each evidence text with highlighted version
+                allEvidenceTexts.forEach(text => {
+                    const escapedText = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(escapedText, 'g');
+                    result = result.replace(regex, `<span class="highlighted-blue">${text}</span>`);
+                });
+                
+                // If there's a specific highlight, add yellow highlight
+                if (highlightedEvidence) {
+                    const escapedHighlight = highlightedEvidence.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    result = result.replace(
+                        new RegExp(`<span class="highlighted-blue">${escapedHighlight}</span>`, 'g'),
+                        `<span class="highlighted-yellow">${highlightedEvidence}</span>`
+                    );
+                }
+                
+                docContent.innerHTML = result;
+            } else if (highlightedEvidence) {
+                // Only highlight the specific evidence
+                const escapedHighlight = highlightedEvidence.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedHighlight, 'g');
+                docContent.innerHTML = medicalDocument.replace(
+                    regex, 
+                    `<span class="highlighted-yellow">${highlightedEvidence}</span>`
+                );
+            } else {
+                docContent.textContent = medicalDocument;
+            }
+        }
+
+        // Highlight text in document and scroll to it
+        function highlightTextInDocument(text) {
+            highlightedEvidence = text;
+            initialHighlighting = true;
+            renderDocument();
+            
+            // Scroll to the evidence
+            if (document.getElementById('document-panel')) {
+                const docPanel = document.getElementById('document-panel');
+                const docContent = document.getElementById('document-content');
+                
+                setTimeout(() => {
+                    const highlightedElement = docContent.querySelector('.highlighted-yellow');
+                    if (highlightedElement) {
+                        highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+            
+            // Reset highlighted evidence after 4 seconds
+            setTimeout(() => {
+                highlightedEvidence = null;
+                renderDocument();
+            }, 4000);
+        }
+
+        // Render a code card
+        function createCodeCard(code) {
+            const isExpanded = expandedCode === code.id;
+            const isAccepted = code.status === 'accepted';
+            const isRejected = code.status === 'rejected';
+            
+            let statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+            let bgColor = '';
+            
+            if (isAccepted) {
+                statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                bgColor = 'bg-green-50';
+            } else if (isRejected) {
+                statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+                bgColor = 'bg-red-50';
+            }
+            
+            const card = document.createElement('div');
+            card.className = `border-b p-4 ${bgColor}`;
+            card.innerHTML = `
+                <div class="flex justify-between items-center cursor-pointer" data-code-id="${code.id}">
+                    <div class="flex items-center">
+                        ${statusIcon}
+                        <div>
+                            <h3 class="font-medium flex items-center">
+                                ${code.id}
+                                <span class="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${code.hcc}</span>
+                            </h3>
+                            <p class="text-sm text-gray-600">${code.name}</p>
+                        </div>
+                    </div>
+                    ${isExpanded 
+                        ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`
+                        : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`
+                    }
+                </div>
+            `;
+            
+            // Add expanded details if expanded
+            if (isExpanded) {
+                const details = document.createElement('div');
+                details.className = 'mt-4 pl-8';
+                
+                // Evidence section
+                let evidenceHtml = `
+                    <h4 class="font-medium mb-2">Evidence:</h4>
+                    <ul class="list-disc pl-5 mb-4">
+                `;
+                
+                code.evidence.forEach(item => {
+                    evidenceHtml += `
+                        <li class="cursor-pointer mb-1 p-1 rounded transition-colors duration-300" data-evidence="${item.text}">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-1"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                                <span>${item.text}</span>
+                            </div>
+                            <div class="text-xs text-gray-500 ml-5 mt-1">${item.location}</div>
+                        </li>
+                    `;
+                });
+                
+                evidenceHtml += `</ul>`;
+                
+                // AI Suggested Action section
+                let actionHtml = `
+                    <h4 class="font-medium mb-2">AI Suggested Action:</h4>
+                    <div class="mb-4 flex">
+                `;
+                
+                if (code.aiAction === 'accept') {
+                    actionHtml += `
+                        <button class="bg-green-100 text-green-800 px-3 py-1 rounded-md flex items-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Accepted</span>
+                        </button>
+                    `;
+                } else {
+                    actionHtml += `
+                        <button class="bg-amber-100 text-amber-800 px-3 py-1 rounded-md flex items-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            <span>Needs Human Review</span>
+                        </button>
+                    `;
+                }
+                
+                actionHtml += `</div>`;
+                
+                // Rationale section
+                const rationaleHtml = `
+                    <h4 class="font-medium mb-2">Rationale:</h4>
+                    <p class="text-sm mb-4">${code.rationale}</p>
+                `;
+                
+                // Action buttons section
+                let buttonsHtml = `<div class="flex justify-end space-x-2">`;
+                
+                if (code.status === 'review') {
+                    buttonsHtml += `
+                        <button class="bg-green-100 text-green-800 px-3 py-1 rounded-md accept-button" data-code-id="${code.id}">
+                            Accept
+                        </button>
+                        <button class="bg-red-100 text-red-800 px-3 py-1 rounded-md reject-button" data-code-id="${code.id}">
+                            Reject
+                        </button>
+                    `;
+                } else if (code.status === 'accepted') {
+                    buttonsHtml += `
+                        <button class="bg-red-100 text-red-800 px-3 py-1 rounded-md reject-button" data-code-id="${code.id}">
+                            Reject
+                        </button>
+                    `;
+                } else if (code.status === 'rejected') {
+                    buttonsHtml += `
+                        <button class="bg-green-100 text-green-800 px-3 py-1 rounded-md accept-button" data-code-id="${code.id}">
+                            Accept
+                        </button>
+                    `;
+                }
+                
+                buttonsHtml += `
+                    <button class="bg-gray-100 text-gray-600 px-3 py-1 rounded-md hide-rationale-button">
+                        Hide AI Rationale
+                    </button>
+                </div>
+                `;
+                
+                details.innerHTML = evidenceHtml + actionHtml + rationaleHtml + buttonsHtml;
+                card.appendChild(details);
+            }
+            
+            return card;
+        }
+
+        // Update counts display
+        function updateCounts() {
+            const reviewCodes = codes.filter(code => code.status === 'review');
+            const acceptedCodes = codes.filter(code => code.status === 'accepted');
+            const rejectedCodes = codes.filter(code => code.status === 'rejected');
+            
+            document.getElementById('review-count').textContent = reviewCodes.length;
+            document.getElementById('accepted-count').textContent = acceptedCodes.length;
+            document.getElementById('rejected-count').textContent = rejectedCodes.length;
+            document.getElementById('codes-needing-review').textContent = reviewCodes.length;
+            document.getElementById('review-status').textContent = `${codes.length - reviewCodes.length} of ${codes.length} reviewed`;
+        }
+
+        // Render codes for a specific tab
+        function renderCodes() {
+            const reviewTab = document.getElementById('review-tab');
+            const acceptedTab = document.getElementById('accepted-tab');
+            const rejectedTab = document.getElementById('rejected-tab');
+            
+            // Clear tabs
+            reviewTab.innerHTML = '';
+            acceptedTab.innerHTML = '';
+            rejectedTab.innerHTML = '';
+            
+            // Filter codes by status
+            const reviewCodes = codes.filter(code => code.status === 'review');
+            const acceptedCodes = codes.filter(code => code.status === 'accepted');
+            const rejectedCodes = codes.filter(code => code.status === 'rejected');
+            
+            // Add empty state messages if needed
+            if (reviewCodes.length === 0) {
+                reviewTab.innerHTML = '<div class="p-4 text-center text-gray-500">No codes requiring review</div>';
+            } else {
+                reviewCodes.forEach(code => {
+                    reviewTab.appendChild(createCodeCard(code));
+                });
+            }
+            
+            if (acceptedCodes.length === 0) {
+                acceptedTab.innerHTML = '<div class="p-4 text-center text-gray-500">No accepted codes yet</div>';
+            } else {
+                acceptedCodes.forEach(code => {
+                    acceptedTab.appendChild(createCodeCard(code));
+                });
+            }
+            
+            if (rejectedCodes.length === 0) {
+                rejectedTab.innerHTML = '<div class="p-4 text-center text-gray-500">No rejected codes yet</div>';
+            } else {
+                rejectedCodes.forEach(code => {
+                    rejectedTab.appendChild(createCodeCard(code));
+                });
+            }
+            
+            // Update counts
+            updateCounts();
+            
+            // Setup event listeners
+            setupEventListeners();
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            activeTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                if (button.dataset.tab === tabName) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+            
+            // Show active tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+        }
+
+        // Update code status
+        function updateCodeStatus(codeId, status) {
+            codes = codes.map(code => 
+                code.id === codeId ? { ...code, status } : code
+            );
+            
+            renderCodes();
+        }
+
+        // Toggle code expansion
+        function toggleCodeExpansion(codeId) {
+            expandedCode = expandedCode === codeId ? null : codeId;
+            renderCodes();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    switchTab(button.dataset.tab);
+                });
+            });
+            
+            // Code expansion
+            document.querySelectorAll('[data-code-id]').forEach(header => {
+                header.addEventListener('click', () => {
+                    toggleCodeExpansion(header.dataset.codeId);
+                });
+            });
+            
+            // Evidence highlighting
+            document.querySelectorAll('[data-evidence]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    highlightTextInDocument(item.dataset.evidence);
+                });
+            });
+            
+            // Accept and reject buttons
+            document.querySelectorAll('.accept-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    updateCodeStatus(button.dataset.codeId, 'accepted');
+                });
+            });
+            
+            document.querySelectorAll('.reject-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    updateCodeStatus(button.dataset.codeId, 'rejected');
+                });
+            });
+            
+            // Hide rationale button
+            document.querySelectorAll('.hide-rationale-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    alert('Rationale hidden');
+                });
+            });
+        }
+
+        // Initialize the application
+        window.onload = function() {
+            //renderDocument();
+            //renderCodes();
+            //switchTab('review');
+            
+            // Highlight all evidence on initial load
+            //initialHighlighting = true;
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAAPID - AI-Assisted Medical Coding</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1a56db;
+            color: white;
+            padding: 0.8rem 1.5rem;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification-icon {
+            margin-right: 1rem;
+            position: relative;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4d4f;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 60px;
+            background-color: #1a56db;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 4rem;
+            z-index: 10;
+        }
+        
+        .sidebar-icon {
+            color: white;
+            margin-bottom: 2rem;
+            opacity: 0.7;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .sidebar-icon.active, .sidebar-icon:hover {
+            opacity: 1;
+        }
+        
+        .main-content {
+            margin-left: 60px;
+            padding: 1.5rem;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .date-display {
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+        
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #1a56db;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background-color: white;
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-title {
+            font-size: 0.85rem;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-subtitle {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .search-filter-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-bar {
+            position: relative;
+            width: 50%;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+        }
+        
+        .filter-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-label {
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+        
+        .filter-pills {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-pill {
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            color: #4b5563;
+            cursor: pointer;
+        }
+        
+        .filter-pill.active {
+            background-color: #1a56db;
+            color: white;
+            border-color: #1a56db;
+        }
+        
+        .data-grid {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .grid-header {
+            display: grid;
+            grid-template-columns: 0.7fr 1.3fr 0.8fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.6fr;
+            background-color: #f9fafb;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .grid-header-cell {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sort-icon {
+            margin-left: 0.25rem;
+            font-size: 0.7rem;
+        }
+        
+        .grid-row {
+            display: grid;
+            grid-template-columns: 0.7fr 1.3fr 0.8fr 1.5fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.6fr;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .grid-row:hover {
+            background-color: #f9fafb;
+        }
+        
+        .grid-cell {
+            font-size: 0.85rem;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+        }
+        
+        .priority-tag {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            text-align: center;
+            width: 60px;
+        }
+        
+        .priority-high {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .priority-medium {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        
+        .patient-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .patient-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .patient-age {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .status-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #d97706;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .codes-cell {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .code-total {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .code-review {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .confidence-tag {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            text-align: center;
+            width: 70px;
+        }
+        
+        .confidence-medium {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        
+        .confidence-low {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .view-btn {
+            color: #1a56db;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.8rem;
+        }
+        
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .goal-tracker {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+    </style>
+    <script>
+        // Function to fetch patient data from API
+        async function fetchPatientData() {
+            try {
+                const response = await fetch('http://localhost:8081/patient');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const patients = await response.json();
+                displayPatients(patients);
+                updateStatistics(patients);
+            } catch (error) {
+                console.error('Error fetching patient data:', error);
+                document.getElementById('patient-grid-container').innerHTML = `
+                    <div class="error-message" style="padding: 2rem; text-align: center; color: #dc2626;">
+                        Failed to load patient data. Please check API connection and try again.
+                        <br>
+                        <button onclick="fetchPatientData()" style="margin-top: 1rem; padding: 0.5rem 1rem; background-color: #1a56db; color: white; border: none; border-radius: 0.25rem; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Function to display patients in the grid
+        function displayPatients(patients) {
+            const container = document.getElementById('patient-grid-container');
+            container.innerHTML = '';
+            
+            patients.forEach(patient => {
+                // Create a row for each patient
+                const row = document.createElement('div');
+                row.className = 'grid-row';
+                
+                // Format date
+                const dateObj = new Date(patient.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                // Determine priority class
+                const priorityClass = patient.priority.toLowerCase() === 'high' ? 'priority-high' : 'priority-medium';
+                
+                // Determine confidence class
+                const confidenceClass = patient.aiConfidence.toLowerCase() === 'low' ? 'confidence-low' : 'confidence-medium';
+                
+                row.innerHTML = `
+                
+                    
+                    <div class="grid-cell">
+                        <div class="patient-info">
+                            <div class="patient-name">${patient.name}</div>
+                            <div class="patient-age">Age: ${patient.age}</div>
+                        </div>
+                    </div>
+                    <div class="grid-cell">${patient.mrn}</div>
+                    <div class="grid-cell">${patient.documentType}</div>
+                    <div class="grid-cell">${formattedDate}</div>
+                    <div class="grid-cell">
+                        <div class="status-tag">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            ${patient.status}
+                        </div>
+                    </div>
+                    <div class="grid-cell">
+                        <div class="codes-cell">
+                            <div class="code-total">Total: ${patient.totalCodes}</div>
+                            <div class="code-review">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                ${patient.reviewNeeded} need review
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-cell">
+                        <div class="confidence-tag ${confidenceClass}">${patient.aiConfidence}</div>
+                    </div>
+                    
+                    <div class="grid-cell">
+                        <div class="view-btn" onclick="viewPatientDetails('${patient.id}')">
+                            View
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(row);
+            });
+        }
+        
+        // Function to update statistics based on patient data
+        function updateStatistics(patients) {
+            // Total cases
+            document.querySelectorAll('.stat-value')[0].textContent = patients.length;
+            
+            // Count patients by status
+            const needsReviewCount = patients.filter(p => p.status === 'Needs Review').length;
+            const aiCompletedCount = patients.filter(p => p.status === 'AI Completed').length;
+            const humanVerifiedCount = patients.filter(p => p.status === 'Human Verified').length;
+            const highPriorityCount = patients.filter(p => p.priority === 'High').length;
+            
+            // Update statistics in the cards
+            document.querySelectorAll('.stat-value')[1].textContent = needsReviewCount;
+            document.querySelectorAll('.stat-value')[2].textContent = aiCompletedCount;
+            document.querySelectorAll('.stat-value')[3].textContent = humanVerifiedCount;
+            document.querySelectorAll('.stat-value')[4].textContent = highPriorityCount;
+            
+            // Update filter pills
+            document.querySelectorAll('.filter-pill')[0].textContent = `All (${patients.length})`;
+            document.querySelectorAll('.filter-pill')[1].textContent = `Needs Review (${needsReviewCount})`;
+            document.querySelectorAll('.filter-pill')[2].textContent = `AI Completed (${aiCompletedCount})`;
+            document.querySelectorAll('.filter-pill')[3].textContent = `Human Verified (${humanVerifiedCount})`;
+        }
+        
+        // Function to handle viewing patient details (placeholder for now)
+        function viewPatientDetails(patientId) {
+            console.log(`Viewing details for patient ID: ${patientId}`);
+            window.location.href = `workingscreen.html?patient_id=${patientId}`;
+            // In a real app, this could navigate to a patient detail page or open a modal
+            //alert(`Opening patient details for ID: ${patientId}`);
+        }
+        
+        // Function to handle search
+        function handleSearch() {
+            const searchInput = document.querySelector('.search-input');
+            searchInput.addEventListener('keyup', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('.grid-row');
+                
+                rows.forEach(row => {
+                    const patientName = row.querySelector('.patient-name').textContent.toLowerCase();
+                    const mrn = row.querySelectorAll('.grid-cell')[2].textContent.toLowerCase();
+                    const docType = row.querySelectorAll('.grid-cell')[3].textContent.toLowerCase();
+                    
+                    if (patientName.includes(searchTerm) || mrn.includes(searchTerm) || docType.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Function to handle filtering
+        function setupFilters() {
+            const filterPills = document.querySelectorAll('.filter-pill');
+            
+            filterPills.forEach((pill, index) => {
+                pill.addEventListener('click', function() {
+                    // Remove active class from all pills
+                    filterPills.forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked pill
+                    this.classList.add('active');
+                    
+                    // Get filter value
+                    let filterValue = '';
+                    switch(index) {
+                        case 0: // All
+                            filterValue = '';
+                            break;
+                        case 1: // Needs Review
+                            filterValue = 'Needs Review';
+                            break;
+                        case 2: // AI Completed
+                            filterValue = 'AI Completed';
+                            break;
+                        case 3: // Human Verified
+                            filterValue = 'Human Verified';
+                            break;
+                    }
+                    
+                    // Filter rows
+                    const rows = document.querySelectorAll('.grid-row');
+                    rows.forEach(row => {
+                        if (filterValue === '') {
+                            row.style.display = '';
+                        } else {
+                            const status = row.querySelectorAll('.grid-cell')[5].textContent.trim();
+                            row.style.display = status.includes(filterValue) ? '' : 'none';
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Handle refresh button click
+        function setupRefreshButton() {
+            document.querySelector('.refresh-btn').addEventListener('click', fetchPatientData);
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchPatientData();
+            handleSearch();
+            setupFilters();
+            setupRefreshButton();
+        });
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <div class="logo-text">RAAPID</div>
+            <div class="logo-subtitle">AI-Assisted Medical Coding</div>
+        </div>
+        <div class="user-info">
+            <div class="notification-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <div class="notification-badge">1</div>
+            </div>
+            <div class="user-avatar">
+                <div>MC</div>
+                <div class="user-role">Medical Coder</div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="sidebar">
+        <div class="sidebar-icon active">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+        </div>
+        <div class="sidebar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+        <div class="sidebar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+        </div>
+        <div class="sidebar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+        </div>
+        <div class="sidebar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <div class="page-title">Coding Queue</div>
+            <div class="header-actions">
+                <div class="date-display">March 4, 2025</div>
+                <button class="refresh-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <polyline points="23 20 23 14 17 14"></polyline>
+                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                    Refresh Queue
+                </button>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-title">Total Cases</div>
+                <div class="stat-value">10</div>
+                <div class="stat-subtitle">Today's Queue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Needs Review</div>
+                <div class="stat-value">6</div>
+                <div class="stat-subtitle">Pending Human Decision</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">AI Completed</div>
+                <div class="stat-value">3</div>
+                <div class="stat-subtitle">Awaiting Verification</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Human Verified</div>
+                <div class="stat-value">1</div>
+                <div class="stat-subtitle">Completed Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">High Priority</div>
+                <div class="stat-value">3</div>
+                <div class="stat-subtitle">Urgent Attention</div>
+            </div>
+        </div>
+        
+        <div class="search-filter-container">
+            <div class="search-bar">
+                <div class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <input type="text" class="search-input" placeholder="Search patients, MRNs, or documents...">
+            </div>
+            <div class="filter-container">
+                <div class="filter-label">Filter:</div>
+                <div class="filter-pills">
+                    <div class="filter-pill active">All (10)</div>
+                    <div class="filter-pill">Needs Review (6)</div>
+                    <div class="filter-pill">AI Completed (3)</div>
+                    <div class="filter-pill">Human Verified (1)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-grid">
+            <div class="grid-header">
+                <!-- <div class="grid-header-cell">
+                    PRIORITY
+                    <span class="sort-icon">↓</span>
+                </div> -->
+                <div class="grid-header-cell">PATIENT</div>
+                <div class="grid-header-cell">MRN</div>
+                <div class="grid-header-cell">DOCUMENT TYPE</div>
+                <div class="grid-header-cell">DATE</div>
+                <div class="grid-header-cell">STATUS</div>
+                <div class="grid-header-cell">CODES</div>
+                <div class="grid-header-cell">AI CONFIDENCE</div>
+                <!-- <div class="grid-header-cell">TIME IN QUEUE</div> -->
+                <div class="grid-header-cell">ACTION</div>
+            </div>
+            
+            <div id="patient-grid-container">
+            <div class="grid-row">
+                <div class="grid-cell">
+                    <div class="priority-tag priority-high">High</div>
+                </div>
+                <div class="grid-cell">
+                    <div class="patient-info">
+                        <div class="patient-name">Rodriguez, Maria</div>
+                        <div class="patient-age">Age: 42</div>
+                    </div>
+                </div>
+                <div class="grid-cell">13454ASDQ</div>
+                <div class="grid-cell">Emergency Department Visit Note</div>
+                <div class="grid-cell">February 28, 2025</div>
+                <div class="grid-cell">
+                    <div class="status-tag">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        Needs Review
+                    </div>
+                </div>
+                <div class="grid-cell">
+                    <div class="codes-cell">
+                        <div class="code-total">Total: 10</div>
+                        <div class="code-review">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            5 need review
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-cell">
+                    <div class="confidence-tag confidence-medium">Medium</div>
+                </div>
+                <div class="grid-cell">2h 15m</div>
+                <div class="grid-cell">
+                    <div class="view-btn">
+                        View
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid-row">
+                <div class="grid-cell">
+                    <div class="priority-tag priority-high">High</div>
+                </div>
+                <div class="grid-cell">
+                    <div class="patient-info">
+                        <div class="patient-name">Brown, Michael</div>
+                        <div class="patient-age">Age: 72</div>
+                    </div>
+                </div>
+                <div class="grid-cell">52431LP</div>
+                <div class="grid-cell">Hospital Discharge Summary</div>
+                <div class="grid-cell">February 25, 2025</div>
+                <div class="grid-cell">
+                    <div class="status-tag">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        Needs Review
+                    </div>
+                </div>
+                <div class="grid-cell">
+                    <div class="codes-cell">
+                        <div class="code-total">Total: 15</div>
+                        <div class="code-review">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            6 need review
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-cell">
+                    <div class="confidence-tag confidence-low">Low</div>
+                </div>
+                <div class="grid-cell">5h 10m</div>
+                <div class="grid-cell">
+                    <div class="view-btn">
+                        View
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+        
+            
+            

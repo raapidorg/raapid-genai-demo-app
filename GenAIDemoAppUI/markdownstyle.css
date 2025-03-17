@@ -1,0 +1,124 @@
+/* General styles */
+.markdown-container {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Headings */
+  .markdown-container h1 {
+    font-size: 2em;
+    border-bottom: 2px solid #333;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .markdown-container h2 {
+    font-size: 1.75em;
+    border-bottom: 1px solid #666;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .markdown-container h3 {
+    font-size: 1.5em;
+    color: #555;
+  }
+  
+  /* Paragraphs */
+  .markdown-container p {
+    font-size: 1.1em;
+    color: #333;
+  }
+  
+  /* Lists */
+  .markdown-container ul,
+  .markdown-container ol {
+    margin-left: 20px;
+    padding-left: 20px;
+  }
+  
+  .markdown-container ul li {
+    list-style-type: disc;
+  }
+  
+  .markdown-container ol li {
+    list-style-type: decimal;
+  }
+  
+  /* Blockquotes */
+  .markdown-container blockquote {
+    border-left: 5px solid #007acc;
+    padding-left: 15px;
+    font-style: italic;
+    color: #555;
+    background-color: #f1f1f1;
+    padding: 10px;
+  }
+  
+  /* Code Blocks */
+  .markdown-container pre {
+    background: #272822;
+    color: #f8f8f2;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+  }
+  
+  .markdown-container code {
+    background: #eee;
+    padding: 3px 5px;
+    border-radius: 3px;
+    font-family: monospace;
+    color: #d63384;
+  }
+  
+  /* Links */
+  .markdown-container a {
+    color: #007acc;
+    text-decoration: none;
+  }
+  
+  .markdown-container a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Images */
+  .markdown-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Tables */
+  .markdown-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .markdown-container th,
+  .markdown-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .markdown-container th {
+    background-color: #007acc;
+    color: white;
+  }
+  
+  /* Horizontal Rule */
+  .markdown-container hr {
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin: 20px 0;
+  }
+  
