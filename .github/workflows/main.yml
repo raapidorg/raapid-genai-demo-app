@@ -3,7 +3,7 @@ name: Deploy to GCS
 on:
   push:
     branches:
-      - master # Or your main branch name (usually 'main' now)
+      - master  # Or your main branch name
 
 jobs:
   deploy:
@@ -11,22 +11,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
       - name: Set up Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           version: 'latest'
-          service_account_key: ${{ secrets.GCP_SA_KEY }} # Store your service account key as a GitHub secret
+          project_id: your-gcp-project-id  # Required when using auth
 
       - name: Configure gcloud
         run: |
-          gcloud config set project raapid-genai
-          gcloud config set compute/region us-central1 # Or your preferred region
+          gcloud config set compute/region us-central1  # Or your preferred region
 
       - name: Upload to GCS
         run: |
           gsutil -m cp -r GenAIDemoAppUI/. gs://your-bucket-name/
-          # -m flag for parallel upload
-          # cp -r copies the directory and its contents recursively
 
       - name: Set Content-Type for HTML files
         run: |
