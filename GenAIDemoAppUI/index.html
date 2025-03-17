@@ -388,7 +388,7 @@
         // Function to fetch patient data from API
         async function fetchPatientData() {
             try {
-                const response = await fetch('http://localhost:8081/patient');
+                const response = await fetch('http://34.55.19.225:8081/patient');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
