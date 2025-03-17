@@ -25,7 +25,7 @@ jobs:
           # Set variables
           REMOTE_HOST=34.55.19.225
           REMOTE_USER=ubuntu
-          REMOTE_PATH=/home/ubuntu/GenAIPipelineDemoApp
+          REMOTE_PATH=/home/ubuntu
 
           # Ensure the remote directory exists (create if it doesn't)
           ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST "mkdir -p $REMOTE_PATH"
