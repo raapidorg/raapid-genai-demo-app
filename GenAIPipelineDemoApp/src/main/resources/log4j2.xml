@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="all" packages="com.example">
+	<Properties>
+		<Property name="log-path">${sys:user.home}/logs/spring-jpa2</Property>
+		<Property name="log-filename">app</Property>
+	</Properties>
+	<Appenders>
+		<RollingFile name="file-log" fileName="${log-path}/${log-filename}.log"
+					 filePattern="${log-path}/${log-filename}-%d{yyyy-MM-dd}-%i.log">
+		<!-- <JsonLayout>
+  				<KeyValuePair key="containerId" value="id1"/>
+  <KeyValuePair key="containerName" value="dockerName"/>
+  
+</JsonLayout> -->
+<!-- <JsonLayout compact="true" properties="true" locationInfo="true" eventEol="true" includeStacktrace="true"> -->
+ <JsonLayout compact="true" properties="true" locationInfo="true" eventEol="true" includeStacktrace="true">
+				<KeyValuePair key="datetime" value="$${date:yyyy-MM-dd'T'HH:mm:ss.SSSZ}" />
+				<KeyValuePair key="ServiceID" value="$${ctx:ServiceID}" />
+				<KeyValuePair key="event" value="$${ctx:event}" />
+			</JsonLayout>
+			<!-- <JsonLayout compact="true" properties="true" locationInfo="true" eventEol="true" includeStacktrace="true">
+			<KeyValuePari key="customFieldDate" value="$${ctx:ServiceID}"/>
+			</JsonLayout> -->
+			<Policies>
+				<SizeBasedTriggeringPolicy size="20 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+		<RollingFile name="file-console" fileName="${log-path}/${log-filename}.console" filePattern="${log-path}/${log-filename}-%d{yyyy-MM-dd}-%i.console">
+			<PatternLayout
+					pattern="[%-5level] %X{IP}:%X{ServiceID}:%X{corel}:%X{trans} %d{yyyy-MM-dd HH:mm:ss.SSS} %X{client} %X{username} [%t] %c{10} [%M] - %msg%n" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="20 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+		 <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="[%-5level] %X{IP}:%X{ServiceID}:%X{corel}:%X{trans} %d{yyyy-MM-dd HH:mm:ss.SSS} %X{client} %X{username} [%t] %c{15}:%M || %msg%n" />
+        </Console>
+		<!--<Console name="console" target="SYSTEM_OUT">
+			<JsonLayout compact="true" properties="true" locationInfo="true" eventEol="true" includeStacktrace="true">
+				<KeyValuePair key="datetime" value="$${date:yyyy-MM-dd'T'HH:mm:ss.SSSZ}" />
+				<KeyValuePair key="sc" value="${ctx:corel}" />
+				<KeyValuePair key="lv" value="${event:Level}"/> {date, ctx, lower, upper, main, env, sys, sd, java, marker, jvmrunargs, event, bundle, map, log4j}  are part of package name org.apache.logging.log4j.core.lookup i.e for event EventLookup.java
+			</JsonLayout>
+		</Console>-->
+		<CustomeLog4j2Appender name = "CustomeLog4j2Appender">
+		<PatternLayout
+					pattern="[%-5level] %X{IP}:%X{ServiceID}:%X{corel}:%X{trans} %d{yyyy-MM-dd HH:mm:ss.SSS} %X{client} %X{username} [%t] [%c{15}:%M:%line] || %msg%n" />
+		</CustomeLog4j2Appender>
+	</Appenders>
+	<Loggers>
+		<logger name="org.springframework" level="warn" additivity="false">
+			<appender-ref ref="console" level="all" />
+			<appender-ref ref="file-log" level="error" />
+			<appender-ref ref="file-console" level="error" />
+			<appender-ref ref="CustomeLog4j2Appender" level="all" />
+		</logger>
+		<logger name="org.apache" level="error" additivity="false">
+			<appender-ref ref="console" level="error" />
+			<appender-ref ref="file-log" level="error" />
+			<appender-ref ref="file-console" level="error" />
+			<appender-ref ref="CustomeLog4j2Appender" level="all" />
+		</logger>
+		<logger name="org.hibernate" level="warn" additivity="false">
+			<appender-ref ref="console" level="debug" />
+			<appender-ref ref="file-log" level="error" />
+			<appender-ref ref="file-console" level="error" />
+			<appender-ref ref="CustomeLog4j2Appender" level="debug" />
+		</logger>
+		<logger name="com.example" level="debug" additivity="false">
+			<appender-ref ref="console" level="debug" />
+			<appender-ref ref="file-log" level="debug" />
+			<appender-ref ref="file-console" level="debug" />
+			<appender-ref ref="CustomeLog4j2Appender" level="all" />
+		</logger>
+		<Root level="error">
+			<appender-ref ref="console" level="error" />
+			<appender-ref ref="file-log" level="error" />
+			<appender-ref ref="file-console" level="error" />
+			<appender-ref ref="CustomeLog4j2Appender" level="all" />
+		</Root>
+	</Loggers>
+</Configuration>
