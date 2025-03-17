@@ -28,9 +28,10 @@ jobs:
 
       - name: Upload to GCS
         run: |
-          gsutil -m cp -r GenAIDemoAppUI/. gs://your-bucket-name/
+          gsutil -m cp -r GenAIDemoAppUI/. gs://raapid-ui-bucket/
 
       - name: Set Content-Type for HTML files
         run: |
-          gcloud storage objects update -h "Content-Type:text/html" gs://your-bucket-name/index.html
-          gcloud storage objects update -h "Content-Type:text/html" gs://your-bucket-name/workingscreen.html
+          gcloud storage objects update -h "Content-Type:text/html" gs://raapid-ui-bucket/index.html
+          gcloud storage objects update -h "Content-Type:text/html" gs://raapid-ui-bucket/workingscreen.html
+          gcloud storage objects update -h "Content-Type:text/css" gs://raapid-ui-bucket/markdownstyle.css
