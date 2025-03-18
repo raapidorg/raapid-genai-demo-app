@@ -101,7 +101,8 @@
     </script>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             margin: 0;
             padding: 0;
         }
@@ -145,6 +146,37 @@
         .tab-button:not(.active):hover {
             color: #374151;
         }
+
+        .notification-icon {
+            margin-right: 1rem;
+            position: relative;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4d4f;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body class="bg-gray-50 flex flex-col h-screen">
@@ -154,9 +186,33 @@
             <h1 class="text-xl font-bold mr-4">RAAPID</h1>
             <span class="text-sm">AI-Assisted Medical Coding</span>
         </div>
+        <!-- <div class="user-info">
+            <div class="notification-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <div class="notification-badge">1</div>
+            </div>
+            <div class="user-avatar">
+                <div>C J</div>
+                <div class="user-role">Medical Coder</div>
+            </div>
+        </div> -->
         <div class="flex items-center">
-            <span class="bg-white text-blue-600 font-bold rounded-md px-2 py-1 mr-4">C J</span>
-            <span>Medical Coder</span>
+            <div class="notification-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <div class="notification-badge">1</div>
+            </div>
+            <div class="user-avatar">
+                <div>C J</div>
+                <div class="user-role">Medical Coder</div>
+            </div>
+            <!-- <span class="text-white-600 rounded-md px-2 py-1 mr-4">C J</span>
+            <span>Medical Coder</span> -->
         </div>
     </header>
 
