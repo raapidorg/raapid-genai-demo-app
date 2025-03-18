@@ -52,7 +52,7 @@
                 id:code.code,
                 name:code.description,
                 status:code.status,
-                hcc:code.hccCodes,
+                hcc:code.hccCodes === null ? '' : code.hccCodes,
                 evidence:code.evidenceList === null ? [] : code.evidenceList.map(element => {
                     evidecneDto = {
                         text:element.text,
