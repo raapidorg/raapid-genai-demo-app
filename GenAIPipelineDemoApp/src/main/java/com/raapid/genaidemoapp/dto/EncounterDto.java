@@ -5,6 +5,7 @@ import java.util.List;
 public class EncounterDto {
 
 	private String documentUrl;
+	private PatientDto patient;
 	private List<CodeDto> codes;
 	
 	
@@ -19,6 +20,12 @@ public class EncounterDto {
 	}
 	public void setCodes(List<CodeDto> codes) {
 		this.codes = codes;
+	}
+	public PatientDto getPatient() {
+		return patient;
+	}
+	public void setPatient(PatientDto patient) {
+		this.patient = patient;
 	}
 	
 	

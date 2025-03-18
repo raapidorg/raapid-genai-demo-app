@@ -36,10 +36,14 @@ public class PatientService {
 		List<PatientDto> patients = new ArrayList<>();
 		List<PatientBean> patientBeans = patientRepository.findAll();
 		patientBeans.forEach(patientBean -> {
-			patients.add(new PatientDto(patientBean.getId(), patientBean.getName(), patientBean.getDate(), "High", "80%",
-					patientBean.getAge(), "MRN_"+patientBean.getName(), patientBean.getDocumentName()	, "In Queue", patientBean.getTotalCodes(), 0, 10));
+			patients.add(generatePatientDto(patientBean));
 		});
 		return patients;
+	}
+	
+	public PatientDto generatePatientDto(PatientBean patientBean) {
+		return new PatientDto(patientBean.getId(), patientBean.getName(), patientBean.getDate(), "High", "80%",
+				patientBean.getAge(), "MRN_"+patientBean.getName(), patientBean.getDocumentName()	, "In Queue", patientBean.getTotalCodes(), 0, 10);
 	}
 	
 	public Integer addPatient(CreatePatientRequestDto createPatientRequestDto) {
