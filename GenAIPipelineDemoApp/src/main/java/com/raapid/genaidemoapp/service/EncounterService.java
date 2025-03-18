@@ -30,6 +30,9 @@ public class EncounterService {
 	@Autowired
 	private PatientRepository patientRepo;
 	
+	@Autowired
+	private PatientService patientService;
+	
 	
 	public EncounterDto getEncounterDetail(Integer patientId) {
 		EncounterDto encounterDto = new EncounterDto();
@@ -40,6 +43,7 @@ public class EncounterService {
 			throw new NotFoundException(errorMsg);
 		}
 		PatientBean patientBean = patientOptional.get();
+		encounterDto.setPatient(patientService.generatePatientDto(patientBean));
 		encounterDto.setDocumentUrl(patientBean.getDocumentPath());
 		encounterDto.setCodes(getCodes(patientId));
 		return encounterDto;
