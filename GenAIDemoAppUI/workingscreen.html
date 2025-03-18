@@ -654,7 +654,8 @@ Internal Medicine`;
                         <div>
                             <h3 class="font-medium flex items-center">
                                 ${code.id}
-                                <span class="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${code.hcc}</span>
+                                ${code.hcc != null && code.hcc.length > 0 ? `<span class="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${code.hcc}</span>`:``}
+                                
                             </h3>
                             <p class="text-sm text-gray-600">${code.name}</p>
                         </div>
