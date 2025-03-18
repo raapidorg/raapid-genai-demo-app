@@ -40,6 +40,11 @@
         console.log(data);
         //let medicalDocument = '';
 
+        document.getElementById('patient-name').innerHTML = data.patient.name;
+        document.getElementById('mrn').innerHTML = data.patient.mrn;
+        document.getElementById('patient-age').innerHTML = data.patient.age;
+
+
         codes = [];
         
         codes = data.codes.map(code => {
@@ -150,7 +155,7 @@
             <span class="text-sm">AI-Assisted Medical Coding</span>
         </div>
         <div class="flex items-center">
-            <span class="bg-white text-blue-600 font-bold rounded-md px-2 py-1 mr-4">MC</span>
+            <span class="bg-white text-blue-600 font-bold rounded-md px-2 py-1 mr-4">C J</span>
             <span>Medical Coder</span>
         </div>
     </header>
@@ -160,15 +165,15 @@
         <div class="grid grid-cols-4 gap-8">
             <div>
                 <span class="text-gray-500 text-sm">Patient</span>
-                <h2 class="font-medium">Johnson, Robert</h2>
+                <h2 class="font-medium" id="patient-name">Johnson, Robert</h2>
             </div>
             <div>
                 <span class="text-gray-500 text-sm">MRN</span>
-                <p>56789EFGH</p>
+                <p id="mrn">56789EFGH</p>
             </div>
             <div>
                 <span class="text-gray-500 text-sm">Age</span>
-                <p>66</p>
+                <p id="patient-age">66</p>
             </div>
             <div>
                 <span class="text-gray-500 text-sm">Document</span>
@@ -208,7 +213,7 @@
     <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar -->
         <div class="bg-white w-16 border-r flex flex-col items-center py-4">
-            <div class="sidebar-icon bg-blue-100 text-blue-600">
+            <div class="sidebar-icon bg-blue-100 text-blue-600" onclick="window.location.href='index.html'">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </div>
             <div class="sidebar-icon text-gray-600 hover:bg-gray-100">
